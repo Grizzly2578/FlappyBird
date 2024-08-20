@@ -42,8 +42,8 @@
 
     <canvas id="canvas" width="431" height="768"></canvas>
 
-    <!-- Audio for jump sound -->
-    <audio id="jumpSound" src="jump-sound.mp3"></audio>
+    <!-- Audio for pipe pass sound -->
+    <audio id="pipePassSound" src="pipe-pass.mp3"></audio>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -51,8 +51,8 @@
         const img = new Image();
         img.src = "https://i.ibb.co/Q9yv5Jk/flappy-bird-set.png";
 
-        // Audio for jump sound
-        const jumpSound = document.getElementById('jumpSound');
+        // Audio for pipe pass sound
+        const pipePassSound = document.getElementById('pipePassSound');
 
         // general settings
         let gamePlaying = false;
@@ -67,7 +67,7 @@
             flight, 
             flyHeight, 
             currentScore, 
-            pipe;
+            pipes;
 
         // pipe settings
         const pipeWidth = 78;
@@ -89,8 +89,6 @@
             // make the pipe and bird moving 
             index++;
 
-            // ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             // background first part 
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height, -((index * (speed / 2)) % canvas.width) + canvas.width, 0, canvas.width, canvas.height);
             // background second part
@@ -98,7 +96,7 @@
             
             // pipe display
             if (gamePlaying){
-                pipes.map(pipe => {
+                pipes.forEach(pipe => {
                     // pipe moving
                     pipe[0] -= speed;
 
@@ -107,12 +105,15 @@
                     // bottom pipe
                     ctx.drawImage(img, 432 + pipeWidth, 108, pipeWidth, canvas.height - pipe[1] + pipeGap, pipe[0], pipe[1] + pipeGap, pipeWidth, canvas.height - pipe[1] + pipeGap);
 
-                    // give 1 point & create new pipe
-                    if(pipe[0] <= -pipeWidth){
+                    // give 1 point & create new pipe when the pipe passes the bird
+                    if (pipe[0] <= -pipeWidth){
                         currentScore++;
                         // check if it's the best score
                         bestScore = Math.max(bestScore, currentScore);
-                        
+
+                        // Play the pipe pass sound
+                        pipePassSound.play();
+
                         // remove & create new pipe
                         pipes = [...pipes.slice(1), [pipes[pipes.length-1][0] + pipeGap + pipeWidth, pipeLoc()]];
                     }
@@ -126,8 +127,9 @@
                         gamePlaying = false;
                         setup();
                     }
-                })
+                });
             }
+
             // draw bird
             if (gamePlaying) {
                 ctx.drawImage(img, 432, Math.floor((index % 9) / 3) * size[1], ...size, cTenth, flyHeight, ...size);
@@ -136,7 +138,7 @@
             } else {
                 ctx.drawImage(img, 432, Math.floor((index % 9) / 3) * size[1], ...size, ((canvas.width / 2) - size[0] / 2), flyHeight, ...size);
                 flyHeight = (canvas.height / 2) - (size[1] / 2);
-                    // text accueil
+                // display text
                 ctx.fillText(`Best score : ${bestScore}`, 85, 245);
                 ctx.fillText('Click to play', 90, 535);
                 ctx.font = "bold 30px courier";
@@ -157,11 +159,9 @@
         document.addEventListener('click', () => {
             gamePlaying = true;
             flight = jump;
-            jumpSound.play();  // Play the jump sound
         });
         window.onclick = () => {
             flight = jump;
-            jumpSound.play();  // Play the jump sound
         };
     </script>
 
